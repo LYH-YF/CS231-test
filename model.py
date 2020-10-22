@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import tensor
 class NearestNeighbor(object):
-    def __init__(self,X,y,p,k) -> None:
+    def __init__(self,X,y,p,k):
         self.X=X
         self.y=y
         self.p=p
@@ -36,7 +36,6 @@ class NearestNeighbor_torch(object):
     def predict(self,X):
         if self.cuda_use:
             X=X.cuda()
-            y=y.cuda()
         num_test=X.shape[0]
         y_test=torch.zeros(num_test,dtype=self.y.dtype)
         for i in range(num_test):
@@ -46,7 +45,7 @@ class NearestNeighbor_torch(object):
             else:
                 distence=torch.sum(torch.abs(self.X-X[i,:]),dim=1)
             k_min_d,k_min_idx=distence.topk(self.k,largest=False)
-            k_min_idx=torch.tensor(k_min_idx)
+            #k_min_idx=torch.tensor(k_min_idx)
             labels=self.y[k_min_idx]
             y_test[i]=torch.argmax(torch.bincount(labels))
         return y_test

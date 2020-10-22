@@ -1,8 +1,13 @@
 import numpy as np
 from dataprocess import CIFAR10_DataLoading
 from model import NearestNeighbor,NearestNeighbor_torch
+from loss import Hinge_Loss
+from optim import Random_Search,Random_Local_Search
 import torch
 def KNNrunner():
+    '''
+    run knn model
+    '''
     train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
     train_label=np.array(train_label)
 
@@ -23,6 +28,9 @@ def KNNrunner():
     acc_rate=sum(result==True)/len(result)
     print("acc:",acc_rate)
 def KNNrunner_torch():
+    '''
+    run knn model with gpu(if gpu is available)
+    '''
     cuda_use= True if torch.cuda.is_available() else False
     
     train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
@@ -38,6 +46,47 @@ def KNNrunner_torch():
     result=y_pred==test_label
     acc_rate=sum(result==True).float()/len(result)
     print("acc:",acc_rate)
+
+def RandomSearchRunner():
+    train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
+    train_label=np.array(train_label)[:10000]
+    train_data=train_data[:10000]
+    test_data=test_data[:1000]
+    test_label=test_label[:1000]
+    test_label=np.array(test_label)
+    W = np.random.randn(10, 3072)*0.0001
+    W=Random_Search(W,train_data,train_label)
+    scores=W.dot(test_data.T)
+    y_pred=np.argmax(scores,axis=0)
+    acc=np.mean(y_pred==test_label)
+    print("acc:{}".format(acc))
+    
+    train_scores=W.dot(train_data.T)
+    y_train=np.argmax(train_scores,axis=0)
+    train_acc=np.mean(y_train==train_label)
+    print("train acc:{}".format(train_acc))
+def RandLocalSearchRunner():
+    cuda_use=True if torch.cuda.is_available() else False
+    train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
+    train_label=np.array(train_label)
+    train_data=train_data
+    test_data=test_data
+    test_label=test_label
+    test_label=np.array(test_label)
+    
+    W = np.random.randn(10, 3072)*0.0001
+    W=Random_Local_Search(W,train_data,train_label,cuda_use=cuda_use)
+    scores=W.dot(test_data.T)
+    y_pred=np.argmax(scores,axis=0)
+    acc=np.mean(y_pred==test_label)
+    print("acc:{}".format(acc))
+    
+    train_scores=W.dot(train_data.T)
+    y_train=np.argmax(train_scores,axis=0)
+    train_acc=np.mean(y_train==train_label)
+    print("train acc:{}".format(train_acc))
 if __name__ == "__main__":
     #KNNrunner()
-    KNNrunner_torch()
+    #KNNrunner_torch()
+    #RandomSearchRunner()
+    RandLocalSearchRunner()
