@@ -21,33 +21,39 @@ def Random_Search(W,X_train,Y_train):
     
     return bestW
 
-def Random_Local_Search(W,X_train,Y_train,step_size=0.0001,cuda_use=False):
+def Random_Local_Search(W,X_train,Y_train,step_size=0.0001):
     bestloss = float("inf") # Python assigns the highest possible float value
+    for num in range(1000):
+        loss_total=0.
+        Wtry = W + np.random.randn(10, 3072) * step_size
+        for idx,data in enumerate(X_train):
+            #loss = L(Xtr_cols, Ytr, Wtry)
+            loss_total+=Hinge_Loss(data,Y_train[idx],Wtry)
+        if loss_total < bestloss:
+            W = Wtry
+            bestloss = loss_total
+        print ('iter [%d/1000] loss is [%f]' % (num, bestloss))
+    return W
+def Random_Local_Search_torch(W,X_train,Y_train,step_size=0.0001,cuda_use=False):
+    bestloss=0.
     if cuda_use:
-        W=torch.tensor(W).cuda()
-        X_train=torch.tensor(X_train).cuda()
-        Y_train=torch.tensor(Y_train).cuda()
-        for num in range(1000):
-            loss_total=0.
-            Wtry = W + torch.randn(10, 3072) * step_size
-            for idx,data in enumerate(X_train):
-                #loss = L(Xtr_cols, Ytr, Wtry)
-                loss_total+=Hinge_Loss(data,Y_train[idx],Wtry)
-            if loss_total < bestloss:
-                W = Wtry
-                bestloss = loss_total
-            print ('iter [%d/1000] loss is [%f]' % (num, bestloss))
-    else:
-        for num in range(1000):
-            loss_total=0.
-            Wtry = W + np.random.randn(10, 3072) * step_size
-            for idx,data in enumerate(X_train):
-                #loss = L(Xtr_cols, Ytr, Wtry)
-                loss_total+=Hinge_Loss(data,Y_train[idx],Wtry)
-            if loss_total < bestloss:
-                W = Wtry
-                bestloss = loss_total
-            print ('iter [%d/1000] loss is [%f]' % (num, bestloss))
+        W=W.cuda()
+        X_train=X_train.cuda()
+    for num in range(1000):
+        loss_total=0.
+        delta_W=torch.randn(10, 3072) * step_size
+        if cuda_use:
+            delta_W=delta_W.cuda()
+        Wtry = W + delta_W
+        for idx,data in enumerate(X_train):
+            #loss = L(Xtr_cols, Ytr, Wtry)
+            #loss_total+=Hinge_Loss(data,Y_train[idx],Wtry)
+            score=Wtry.matmul(data)
+            loss_total+=Hinge_Loss_(score,Y_train[idx])
+        if loss_total < bestloss:
+            W = Wtry
+            bestloss = loss_total
+        print ('iter [%d/1000] loss is [%f]' % (num, bestloss))
     return W
 if __name__ == "__main__":
     pass

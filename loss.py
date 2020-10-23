@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 def Hinge_Loss(X,y,W):
     """
     fully-vectorized implementation :
@@ -44,36 +45,13 @@ def eval_numerical_gradient(f, x):
         it.iternext() # 到下个维度
     return grad
 if __name__ == "__main__":
-    '''
-    # 假设X_train的每一列都是一个数据样本（比如3073 x 50000）
-    # 假设Y_train是数据样本的类别标签（比如一个长50000的一维数组）
-    # 假设函数L对损失函数进行评价
-
-    bestloss = float("inf") # Python assigns the highest possible float value
-    for num in xrange(1000):
-    W = np.random.randn(10, 3073) * 0.0001 # generate random parameters
-    loss = L(X_train, Y_train, W) # get the loss over the entire training set
-    if loss < bestloss: # keep track of the best solution
-        bestloss = loss
-        bestW = W
-    print 'in attempt %d the loss was %f, best %f' % (num, loss, bestloss)
-
-    # 输出:
-    # in attempt 0 the loss was 9.401632, best 9.401632
-    # in attempt 1 the loss was 8.959668, best 8.959668
-    # in attempt 2 the loss was 9.044034, best 8.959668
-    # in attempt 3 the loss was 9.278948, best 8.959668
-    # in attempt 4 the loss was 8.857370, best 8.857370
-    # in attempt 5 the loss was 8.943151, best 8.857370
-    # in attempt 6 the loss was 8.605604, best 8.605604
-    # ... (trunctated: continues for 1000 lines)
-    #在上面的代码中，我们尝试了若干随机生成的权重矩阵W，其中某些的损失值较小，而另一些的损失值大些。我们可以把这次随机搜索中找到的最好的权重W取出，然后去跑测试集：
-
-    # 假设X_test尺寸是[3073 x 10000], Y_test尺寸是[10000 x 1]
-    scores = Wbest.dot(Xte_cols) # 10 x 10000, the class scores for all test examples
-    # 找到在每列中评分值最大的索引（即预测的分类）
-    Yte_predict = np.argmax(scores, axis = 0)
-    # 以及计算准确率
-    np.mean(Yte_predict == Yte)
-    # 返回 0.1555
-    '''
+    a1=np.random.randn(10,3072)
+    a2=np.random.randn(3072)
+    a3=a1.dot(a2)
+    print(a3.shape)
+    b1=torch.randn((10,3072))
+    b2=torch.randn(20,3072)
+    print(b1.shape," ",b2.shape)
+    #b3=b1.mul(b2)
+    b3=torch.matmul(b1,b2[0])
+    print(b3.shape)

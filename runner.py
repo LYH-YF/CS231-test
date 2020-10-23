@@ -2,7 +2,7 @@ import numpy as np
 from dataprocess import CIFAR10_DataLoading
 from model import NearestNeighbor,NearestNeighbor_torch
 from loss import Hinge_Loss
-from optim import Random_Search,Random_Local_Search
+from optim import *
 import torch
 def KNNrunner():
     '''
@@ -85,8 +85,24 @@ def RandLocalSearchRunner():
     y_train=np.argmax(train_scores,axis=0)
     train_acc=np.mean(y_train==train_label)
     print("train acc:{}".format(train_acc))
+def RandLocalSearchRunner_torch():
+    cuda_use= True if torch.cuda.is_available() else False
+    
+    train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
+    train_data=torch.tensor(train_data[:100]).float()
+    train_label=torch.tensor(train_label[:100]).float()
+    test_data=torch.tensor(test_data[:100]).float()
+    test_label=torch.tensor(test_label[:100]).float()
+
+    W=torch.randn(10,3072)*0.0001
+    W=Random_Local_Search_torch(W,train_data,train_label,cuda_use=cuda_use)
+    scores=W.dot(test_data.T)
+    y_pred=torch.argmax(scores,axis=0)
+    acc=torch.mean(y_pred==test_label)
+    print("acc:{}".format(acc))
 if __name__ == "__main__":
     #KNNrunner()
     #KNNrunner_torch()
     #RandomSearchRunner()
     RandLocalSearchRunner()
+    #RandLocalSearchRunner_torch()
