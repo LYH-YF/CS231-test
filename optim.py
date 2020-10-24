@@ -87,7 +87,6 @@ def eval_numerical_gradient(W,X_train,y_train):
     while not it.finished:
         # 计算x+h处的函数值
         ix = it.multi_index
-        print("\r",ix,end="")
         old_value = W[ix]
         W[ix] = old_value + h # 增加h
         #fxh = f(x) # 计算f(x + h)
@@ -128,4 +127,7 @@ def Gradient(W,X_train,y_train,step=0.001):
             break
     return W
 if __name__ == "__main__":
-    pass
+    W = np.random.randn(5, 10)
+    X = np.random.randn(10, 3)
+    D = W.dot(X)
+    print(1)

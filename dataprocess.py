@@ -43,7 +43,25 @@ def CIFAR10_Batch_data():
         inputs=data[b'data']
         labels=np.array(data[b'labels'])
         yield {"input":inputs,"target":labels}
+
+def PCA(X):
+    X -= np.mean(X, axis = 0) # 对数据进行零中心化(重要)
+    cov = np.dot(X.T, X) / X.shape[0] # 得到数据的协方差矩阵
+    U,S,V = np.linalg.svd(cov)
+    Xrot = np.dot(X,U) # 对数据去相关性
+    Xrot_reduced = np.dot(X, U[:,:100]) # Xrot_reduced 变成 [N x 100]
+    return Xrot_reduced
+def Whitening(X):
+    X -= np.mean(X, axis = 0) # 对数据进行零中心化(重要)
+    cov = np.dot(X.T, X) / X.shape[0] # 得到数据的协方差矩阵
+    U,S,V = np.linalg.svd(cov)
+    Xrot = np.dot(X,U) # 对数据去相关性
+    # 对数据进行白化操作:
+    # 除以特征值 
+    Xwhite = Xrot / np.sqrt(S + 1e-5)
+    return Xwhite
 if __name__ == "__main__":
-    datas,labels=dataloading()
     train,train_y,test,test_y=CIFAR10_DataLoading()
+    train_pca=PCA(np.float64(train))
+    train_white=Whitening(np.float64(train))
     print(1)

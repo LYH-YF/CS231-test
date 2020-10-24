@@ -3,6 +3,8 @@ from dataprocess import CIFAR10_DataLoading,CIFAR10_Batch_data,CIFAR10_TestData
 from model import NearestNeighbor,NearestNeighbor_torch
 from loss import Hinge_Loss
 from optim import *
+from DataLoader import CIFAR10_DataLoader
+from evaluate import cifar_evaluate
 import torch
 def KNNrunner():
     '''
@@ -119,30 +121,31 @@ def GradientRunner():
     acc=np.mean(y_pred==test_label)
     print("acc:{}".format(acc))
 def GradientRunner_(epoch,lr):
-    datas=CIFAR10_Batch_data()
+    #datas=CIFAR10_Batch_data()
+    cifar_dataloader=CIFAR10_DataLoader()
+    datas=cifar_dataloader.DataLoading(256,"train")
     W = np.random.randn(10, 3072)*0.0001
     bestW=W
     bestloss=float("inf")
+    print("start")
     for epo in range(epoch):
-        step=0
-        for batch_data in datas:
-            step+=1
-            grad=eval_numerical_gradient(W,batch_data["input"],batch_data["target"])
+        for step,batch_data in enumerate(datas):
+            grad=eval_numerical_gradient(W,batch_data["inputs"],batch_data["labels"])
             W=W-grad*lr
-            loss=Hinge_L(batch_data["input"],batch_data["target"],W)
-            print("epoch:[%d/%d] step[%d]:loss[%.8f]"%(epo,epoch,step,loss))
+            loss=Hinge_L(batch_data["inputs"],batch_data["labels"],W)
+            print("epoch:[%d/%d] step[%d]:loss[%.8f]"%(epo+1,epoch,step+1,loss))
             if loss<bestloss:
                 bestW=W
                 bestloss=loss
-    test_data,test_label=CIFAR10_TestData()
-    test_label=np.array(test_label)
-    scores=W.dot(test_data.T)
-    y_pred=np.argmax(scores,axis=0)
-    acc=np.mean(y_pred==test_label)
-    print("acc:{}".format(acc))
+    test_datas=cifar_dataloader.DataLoading(256,"test")
+    cifar_evaluate(bestW,
+                    datas,
+                    test_datas,
+                    cifar_dataloader.train_num,
+                    cifar_dataloader.test_num)
 def GradientRunner_torch(epoch,lr):
     cuda_use= True if torch.cuda.is_available() else False
-    datas=CIFAR10_Batch_data()
+    #datas=CIFAR10_Batch_data()
     #W = np.random.randn(10, 3072)*0.0001
     W=torch.randn(10,3072)*0.0001
     if cuda_use:
@@ -151,7 +154,7 @@ def GradientRunner_torch(epoch,lr):
     bestloss=float("inf")
     for epo in range(epoch):
         step=0
-        for batch_data in datas:
+        for batch_data in CIFAR10_Batch_data():
             step+=1
             #grad=eval_numerical_gradient(W,batch_data["input"],batch_data["target"])
             X_train=torch.tensor(batch_data["input"]).float()
@@ -164,16 +167,22 @@ def GradientRunner_torch(epoch,lr):
             if loss<bestloss:
                 bestW=W
                 bestloss=loss
+        print()
     test_data,test_label=CIFAR10_TestData()
     if cuda_use:
         test_data=torch.tensor(test_data).float().cuda()
+        test_label=torch.tensor(test_label).cuda()
     else:
         test_data=torch.tensor(test_data).float()
-    test_label=torch.tensor(test_label)
+        test_label=torch.tensor(test_label)
     #scores=bestW.dot(test_data.T)
     scores=torch.matmul(bestW,test_data.T)
-    y_pred=np.argmax(scores,axis=0)
-    acc=np.mean(y_pred==test_label)
+    #y_pred=np.argmax(scores,axis=0)
+    y_pred=torch.argmax(scores,axis=0)
+    #acc=np.mean(y_pred==test_label)
+    result=y_pred==test_label
+    acc=sum(result==True).float()/len(result)
+    #acc=torch.mean(y_pred==test_label)
     print("acc:{}".format(acc))
 if __name__ == "__main__":
     #KNNrunner()
@@ -181,5 +190,5 @@ if __name__ == "__main__":
     #RandomSearchRunner()
     #RandLocalSearchRunner()
     #RandLocalSearchRunner_torch()
-    #GradientRunner_(200,0.001)
-    GradientRunner_torch(200,0.001)
+    GradientRunner_(200,0.001)
+    #GradientRunner_torch(200,0.001)

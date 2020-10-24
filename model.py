@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import torch
 from torch import tensor
 class NearestNeighbor(object):
@@ -49,6 +50,14 @@ class NearestNeighbor_torch(object):
             labels=self.y[k_min_idx]
             y_test[i]=torch.argmax(torch.bincount(labels))
         return y_test
+
+class Neuron(object):
+    # ... 
+    def forward(self,inputs):
+        """ 假设输入和权重是1-D的numpy数组，偏差是一个数字 """
+        cell_body_sum = np.sum(inputs * self.weights) + self.bias
+        firing_rate = 1.0 / (1.0 + math.exp(-cell_body_sum)) # sigmoid激活函数
+        return firing_rate
 if __name__ == "__main__":
     a=tensor([1,25,3,6,8,12,7,0,-1,9])
     b=np.array([1,25,3,6,8,12,7,0,-1,9])
