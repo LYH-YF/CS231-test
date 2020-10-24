@@ -102,13 +102,22 @@ def RandLocalSearchRunner():
 #     print("acc:{}".format(acc))
 def GradientRunner():
     train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
-    train_label=np.array(train_label)[:100]
-    train_data=train_data[:100]
-    test_data=test_data[:100]
-    test_label=test_label[:100]
+    train_label=np.array(train_label)
+    train_data=train_data
+    test_data=test_data
+    test_label=test_label
     test_label=np.array(test_label)
     W = np.random.randn(10, 3072)*0.0001
-    Gradient(W,train_data,train_label)
+    W=Gradient(W,train_data,train_label)
+
+    train_scores=W.dot(train_data.T)
+    y_train=np.argmax(train_scores,axis=0)
+    train_acc=np.mean(y_train==train_label)
+    print("train acc:{}".format(train_acc))
+    scores=W.dot(test_data.T)
+    y_pred=np.argmax(scores,axis=0)
+    acc=np.mean(y_pred==test_label)
+    print("acc:{}".format(acc))
 if __name__ == "__main__":
     #KNNrunner()
     #KNNrunner_torch()

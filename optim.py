@@ -100,11 +100,14 @@ def Gradient(W,X_train,y_train,step=0.001):
     i=0
     while True:
         i+=1
-        if i>1000:
+        if i>200:
             break
         grad=eval_numerical_gradient(W,X_train,y_train)
         W=W-grad*step
         loss=Hinge_L(X_train,y_train,W)
         print("\riter [%d] :%.10f "%(i,loss))
+        if loss<0.01:
+            break
+    return W
 if __name__ == "__main__":
     pass
