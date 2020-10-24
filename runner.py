@@ -140,11 +140,44 @@ def GradientRunner_(epoch,lr):
     y_pred=np.argmax(scores,axis=0)
     acc=np.mean(y_pred==test_label)
     print("acc:{}".format(acc))
-
+def GradientRunner_torch(epoch,lr):
+    cuda_use= True if torch.cuda.is_available() else False
+    datas=CIFAR10_Batch_data()
+    #W = np.random.randn(10, 3072)*0.0001
+    W=torch.randn(10,3072)*0.0001
+    bestW=W
+    bestloss=float("inf")
+    for epo in range(epoch):
+        step=0
+        for batch_data in datas:
+            step+=1
+            #grad=eval_numerical_gradient(W,batch_data["input"],batch_data["target"])
+            X_train=batch_data["input"]
+            y_train=batch_data["target"]
+            grad=Eval_Gradient(W,X_train,y_train,cuda_use=cuda_use)
+            W=W-grad*lr
+            #loss=Hinge_L(batch_data["input"],batch_data["target"],W)
+            loss=Hinge_L_torch(X_train,y_train,W,cuda_use=cuda_use)
+            print("epoch:[%d/%d] step[%d]:loss[%.8f]"%(epo,epoch,step,loss))
+            if loss<bestloss:
+                bestW=W
+                bestloss=loss
+    test_data,test_label=CIFAR10_TestData()
+    if cuda_use:
+        test_data=torch.tensor(test_data).cuda()
+    else:
+        test_data=torch.tensor(test_data)
+    test_label=torch.tensor(test_label)
+    #scores=bestW.dot(test_data.T)
+    scores=torch.matmul(bestW,test_data.T)
+    y_pred=np.argmax(scores,axis=0)
+    acc=np.mean(y_pred==test_label)
+    print("acc:{}".format(acc))
 if __name__ == "__main__":
     #KNNrunner()
     #KNNrunner_torch()
     #RandomSearchRunner()
     #RandLocalSearchRunner()
     #RandLocalSearchRunner_torch()
-    GradientRunner_(200,0.001)
+    #GradientRunner_(200,0.001)
+    GradientRunner_torch(200,0.001)

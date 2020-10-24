@@ -23,21 +23,25 @@ def Hinge_L(X,y,W):
     scores=np.matmul(X,W.T)
     row_idx=np.arange(scores.shape[0])
     margin=np.maximum(0,scores-np.matrix(scores[row_idx,y]).T+delta)
-    loss=margin.sum()-delta
+    loss=margin.sum()-delta*y.shape[0]
+    return loss
+def Hinge_L_torch(X,y,W,cuda_use=False):
+    if cuda_use:
+        X=X.cuda()
+        W=W.cuda()
+    delta=1.0
+    scores=torch.matmul(W,X.T)
+    row_idx=torch.arange(scores.shape[1])
+    margin=scores-scores[y,row_idx]+delta
+    zero=torch.tensor([0.])
+    margin=torch.max(zero,margin)
+    loss=margin.sum()-delta*y.shape[0]
     return loss
 def Softmax_Loss(s,y):
     return -np.log(s[y])
 
 if __name__ == "__main__":
-    # b1=torch.randn((10,3072))
-    # b2=torch.randn(20,3072)
-    # y=torch.randint(low=0,high=9,size=(20,1)).squeeze()
-    # score=torch.matmul(b1,b2.T)
-    # aa=score[y]
-    # print(b1.shape," ",b2.shape)
-    a1=np.random.randn(10,3072)
-    a2=np.random.randn(20,3072)
-    y=np.random.randint(0,9,size=(20))
-    score=np.matmul(a1,a2.T)
-    aa=score[y]
-    print(1)
+    X=torch.randn((2,10))
+    W=torch.randn(10,10)
+    y=torch.randint(0,9,size=(2,1)).squeeze()
+    print(Hinge_L_torch(X,y,W))

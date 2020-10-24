@@ -87,6 +87,7 @@ def eval_numerical_gradient(W,X_train,y_train):
     while not it.finished:
         # 计算x+h处的函数值
         ix = it.multi_index
+        print("\r",ix,end="")
         old_value = W[ix]
         W[ix] = old_value + h # 增加h
         #fxh = f(x) # 计算f(x + h)
@@ -95,6 +96,23 @@ def eval_numerical_gradient(W,X_train,y_train):
         # 计算偏导数
         grad[ix] = (fxh - fx) / h # 坡度
         it.iternext() # 到下个维度
+    return grad
+def Eval_Gradient(W,X_train,y_train,cuda_use=False):
+    if cuda_use:
+        W=W.cuda()
+        X_train=X_train.cuda()
+    fx=Hinge_L_torch(X_train,y,W)
+    grad=torch.zeros(W.shape)
+    h = 0.00001
+    for i in range(W.shape[0]):
+        for j in range(W.shape[1]):
+            old_value = W[i,j]
+            W[i,j] = old_value + h
+            fxh=Hinge_L_torch(X_train,y_train,W)
+            W[i,j]=old_value
+            grad[i,j]=(fxh-fx)/h
+    if cuda_use:
+        grad=grad.cuda()
     return grad
 def Gradient(W,X_train,y_train,step=0.001):
     i=0
