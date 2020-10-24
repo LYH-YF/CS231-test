@@ -1,5 +1,5 @@
 import numpy as np
-from dataprocess import CIFAR10_DataLoading
+from dataprocess import CIFAR10_DataLoading,CIFAR10_Batch_data,CIFAR10_TestData
 from model import NearestNeighbor,NearestNeighbor_torch
 from loss import Hinge_Loss
 from optim import *
@@ -118,10 +118,33 @@ def GradientRunner():
     y_pred=np.argmax(scores,axis=0)
     acc=np.mean(y_pred==test_label)
     print("acc:{}".format(acc))
+def GradientRunner_(epoch,lr):
+    datas=CIFAR10_Batch_data()
+    W = np.random.randn(10, 3072)*0.0001
+    bestW=W
+    bestloss=float("inf")
+    for epo in range(epoch):
+        step=0
+        for batch_data in datas:
+            step+=1
+            grad=eval_numerical_gradient(W,batch_data["input"],batch_data["target"])
+            W=W-grad*lr
+            loss=Hinge_L(batch_data["input"],batch_data["target"],W)
+            print("epoch:[%d/%d] step[%d]:loss[%.8f]"%(epo,epoch,step,loss))
+            if loss<bestloss:
+                bestW=W
+                bestloss=loss
+    test_data,test_label=CIFAR10_TestData()
+    test_label=np.array(test_label)
+    scores=W.dot(test_data.T)
+    y_pred=np.argmax(scores,axis=0)
+    acc=np.mean(y_pred==test_label)
+    print("acc:{}".format(acc))
+
 if __name__ == "__main__":
     #KNNrunner()
     #KNNrunner_torch()
     #RandomSearchRunner()
     #RandLocalSearchRunner()
     #RandLocalSearchRunner_torch()
-    GradientRunner()
+    GradientRunner_(200,0.001)

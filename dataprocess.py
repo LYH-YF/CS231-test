@@ -36,6 +36,13 @@ def CIFAR10_DataLoading():
     train_data,train_label=CIFAR10_TrainData()
     test_data,test_label=CIFAR10_TestData()
     return train_data,train_label,test_data,test_label
+def CIFAR10_Batch_data():
+    for i  in range(1,6):
+        filename="data/cifar-10-batches/data_batch_"+str(i)
+        data=unpickle(filename)
+        inputs=data[b'data']
+        labels=np.array(data[b'labels'])
+        yield {"input":inputs,"target":labels}
 if __name__ == "__main__":
     datas,labels=dataloading()
     train,train_y,test,test_y=CIFAR10_DataLoading()
