@@ -145,6 +145,8 @@ def GradientRunner_torch(epoch,lr):
     datas=CIFAR10_Batch_data()
     #W = np.random.randn(10, 3072)*0.0001
     W=torch.randn(10,3072)*0.0001
+    if cuda_use:
+            W=W.cuda()
     bestW=W
     bestloss=float("inf")
     for epo in range(epoch):
@@ -152,8 +154,8 @@ def GradientRunner_torch(epoch,lr):
         for batch_data in datas:
             step+=1
             #grad=eval_numerical_gradient(W,batch_data["input"],batch_data["target"])
-            X_train=batch_data["input"]
-            y_train=batch_data["target"]
+            X_train=torch.tensor(batch_data["input"]).float()
+            y_train=torch.tensor(batch_data["target"])
             grad=Eval_Gradient(W,X_train,y_train,cuda_use=cuda_use)
             W=W-grad*lr
             #loss=Hinge_L(batch_data["input"],batch_data["target"],W)
@@ -164,9 +166,9 @@ def GradientRunner_torch(epoch,lr):
                 bestloss=loss
     test_data,test_label=CIFAR10_TestData()
     if cuda_use:
-        test_data=torch.tensor(test_data).cuda()
+        test_data=torch.tensor(test_data).float().cuda()
     else:
-        test_data=torch.tensor(test_data)
+        test_data=torch.tensor(test_data).float()
     test_label=torch.tensor(test_label)
     #scores=bestW.dot(test_data.T)
     scores=torch.matmul(bestW,test_data.T)
