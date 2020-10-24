@@ -34,6 +34,8 @@ def Hinge_L_torch(X,y,W,cuda_use=False):
     row_idx=torch.arange(scores.shape[1])
     margin=scores-scores[y,row_idx]+delta
     zero=torch.tensor([0.])
+    if cuda_use:
+        zero=zero.cuda()
     margin=torch.max(zero,margin)
     loss=margin.sum()-delta*y.shape[0]
     return loss

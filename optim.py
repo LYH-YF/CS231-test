@@ -101,7 +101,7 @@ def Eval_Gradient(W,X_train,y_train,cuda_use=False):
     if cuda_use:
         W=W.cuda()
         X_train=X_train.cuda()
-    fx=Hinge_L_torch(X_train,y,W,cuda_use=cuda_use)
+    fx=Hinge_L_torch(X_train,y_train,W,cuda_use=cuda_use)
     grad=torch.zeros(W.shape)
     h = 0.00001
     for i in range(W.shape[0]):
