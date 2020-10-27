@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.core.defchararray import lower
 import torch
 def Hinge_Loss(X,y,W):
     delta=1.0
@@ -39,11 +40,25 @@ def Hinge_L_torch(X,y,W,cuda_use=False):
     margin=torch.max(zero,margin)
     loss=margin.sum()-delta*y.shape[0]
     return loss
-def Softmax_Loss(s,y):
+def Softmax_Loss_(s,y):
     return -np.log(s[y])
-
+def Softmax_Loss(X,y,W):
+    '''
+    W(10*3072)
+    X(50000*3072)
+    y(50000)ndarray
+    '''
+    scores=np.matmul(X,W.T)
+    x=np.max(scores,axis=1)
+    scores=scores-np.matrix(x).reshape(X.shape[0],1)
+    p= np.exp(scores) / np.sum(np.exp(scores),axis=1)
+    row_idx=np.arange(scores.shape[0])
+    p_right=p[row_idx,y]
+    loss=np.sum(-np.log(p_right))
+    return loss
 if __name__ == "__main__":
-    X=torch.randn((2,10))
-    W=torch.randn(10,10)
-    y=torch.randint(0,9,size=(2,1)).squeeze()
-    print(Hinge_L_torch(X,y,W))
+    X=np.random.randn(100,200)
+    W=np.random.randn(10,200)
+    y=np.random.randint(low=0,high=9,size=(100,1)).flatten()
+    loss=Softmax_Loss(X,y,W)
+    print(loss)

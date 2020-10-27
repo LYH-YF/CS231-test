@@ -2,6 +2,7 @@ import numpy as np
 import math
 import torch
 from torch import tensor
+from optim import Numerical_Gradient
 class NearestNeighbor(object):
     def __init__(self,X,y,p,k):
         self.X=X
@@ -58,6 +59,21 @@ class Neuron(object):
         cell_body_sum = np.sum(inputs * self.weights) + self.bias
         firing_rate = 1.0 / (1.0 + math.exp(-cell_body_sum)) # sigmoid激活函数
         return firing_rate
+class SVM_Classifier(object):
+    def __init__(self,input_dim,output_dim):
+        self.W=np.random.randn(output_dim,input_dim)*0.0001
+    def train(self,X,y,loss_f,lr):
+        grad=Numerical_Gradient(self.W,X,y,loss_f)
+        self.W=self.W-grad*lr
+class Softmax_Classifier(object):
+    def __init__(self,input_dim,output_dim):
+        self.W=np.random.randn(output_dim,input_dim)
+    def train(self,X,y,loss_f,lr):
+        grad=Numerical_Gradient(self.W,X,y,loss_f)
+        self.W=self.W-grad*lr
+    def eval(self,datas_X,datas_y,loss_f):
+        loss=loss_f(datas_X,datas_y,self.W)
+        return loss
 if __name__ == "__main__":
     a=tensor([1,25,3,6,8,12,7,0,-1,9])
     b=np.array([1,25,3,6,8,12,7,0,-1,9])
@@ -65,4 +81,3 @@ if __name__ == "__main__":
     print(x,y)
     print(a.argsort())
     print(b.argsort())
-    

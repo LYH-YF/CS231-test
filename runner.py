@@ -1,11 +1,12 @@
 import numpy as np
 from dataprocess import CIFAR10_DataLoading,CIFAR10_Batch_data,CIFAR10_TestData
-from model import NearestNeighbor,NearestNeighbor_torch
+from model import *
 from loss import Hinge_Loss
 from optim import *
 from DataLoader import CIFAR10_DataLoader
 from evaluate import cifar_evaluate
 import torch
+
 def KNNrunner():
     '''
     run knn model
@@ -87,21 +88,7 @@ def RandLocalSearchRunner():
     y_train=np.argmax(train_scores,axis=0)
     train_acc=np.mean(y_train==train_label)
     print("train acc:{}".format(train_acc))
-# def RandLocalSearchRunner_torch():
-#     cuda_use= True if torch.cuda.is_available() else False
-    
-#     train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
-#     train_data=torch.tensor(train_data[:100]).float()
-#     train_label=torch.tensor(train_label[:100]).float()
-#     test_data=torch.tensor(test_data[:100]).float()
-#     test_label=torch.tensor(test_label[:100]).float()
 
-#     W=torch.randn(10,3072)*0.0001
-#     W=Random_Local_Search_torch(W,train_data,train_label,cuda_use=cuda_use)
-#     scores=W.dot(test_data.T)
-#     y_pred=torch.argmax(scores,axis=0)
-#     acc=torch.mean(y_pred==test_label)
-#     print("acc:{}".format(acc))
 def GradientRunner():
     train_data,train_label,test_data,test_label=CIFAR10_DataLoading()
     train_label=np.array(train_label)
@@ -184,11 +171,37 @@ def GradientRunner_torch(epoch,lr):
     acc=sum(result==True).float()/len(result)
     #acc=torch.mean(y_pred==test_label)
     print("acc:{}".format(acc))
+def Softmax_Runner(epoch,lr):
+    cifar_dataloader=CIFAR10_DataLoader()
+    datas=cifar_dataloader.DataLoading(256,"train")
+    test_datas=cifar_dataloader.DataLoading(256,"test")
+    model=Softmax_Classifier(3072,10)
+    bestW=model.W
+    bestloss=float("inf")
+    print("start train")
+    for epo in range(epoch):
+        for step,batch_data in enumerate(datas):
+            model.train(batch_data["inputs"],batch_data["labels"],Softmax_Loss,lr)
+            loss=model.eval(batch_data["inputs"],batch_data["labels"],Softmax_Loss)
+            print("epoch:[%d/%d] step[%d]:loss[%.8f]"%(epo+1,epoch,step+1,loss))
+            cifar_evaluate(W=model.W,
+                            test_datas=test_datas,
+                            test_num=cifar_dataloader.test_num)
+            if loss<bestloss:
+                bestW=W
+                bestloss=loss
+    print("start test")
+    cifar_evaluate(bestW,
+                    datas,
+                    test_datas,
+                    cifar_dataloader.train_num,
+                    cifar_dataloader.test_num)
 if __name__ == "__main__":
     #KNNrunner()
     #KNNrunner_torch()
     #RandomSearchRunner()
     #RandLocalSearchRunner()
     #RandLocalSearchRunner_torch()
-    GradientRunner_(200,0.001)
+    #GradientRunner_(200,0.001)
     #GradientRunner_torch(200,0.001)
+    Softmax_Runner(10,0.001)
